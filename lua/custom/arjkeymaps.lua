@@ -3,6 +3,7 @@ vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle! right<CR>', {desc=' ARJ Tog
 vim.keymap.set('n', '<leader>,', '/<<CR>ca<')
 vim.keymap.set('n', '<leader>e', '<Cmd>Neotree<CR>')
 vim.keymap.set('n', '<leader>t', '<Cmd>ToggleTerm<CR>')
+vim.keymap.set('n', '<leader><leader>t', '<Cmd>!pytest<CR>')
 vim.keymap.set('n', '<leader>o', '<Cmd>Oil<CR>')
 ---- ------------------------------
 vim.keymap.set('n', '<CTRL>j', '<cmd>cnext<CR>')

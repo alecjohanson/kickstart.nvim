@@ -2,7 +2,7 @@
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.maplocalleader = ','
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
@@ -334,28 +334,6 @@ require('lazy').setup({
       'hrsh7th/cmp-nvim-lsp',
     },
     config = function()
-      -- Brief aside: **What is LSP?**
-      --
-      -- LSP is an initialism you've probably heard, but might not understand what it is.
-      --
-      -- LSP stands for Language Server Protocol. It's a protocol that helps editors
-      -- and language tooling communicate in a standardized fashion.
-      --
-      -- In general, you have a "server" which is some tool built to understand a particular
-      -- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc.). These Language Servers
-      -- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
-      -- processes that communicate with some "client" - in this case, Neovim!
-      --
-      -- LSP provides Neovim with features like:
-      --  - Go to definition
-      --  - Find references
-      --  - Autocompletion
-      --  - Symbol Search
-      --  - and more!
-      --
-      -- Thus, Language Servers are external tools that must be installed separately from
-      -- Neovim. This is where `mason` and related plugins come into play.
-      --
       -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
       -- and elegantly composed help section, `:help lsp-vs-treesitter`
 
@@ -483,7 +461,29 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         gopls = {},
-        -- pyright = {},
+        pylsp = {
+          settings = {
+            pylsp = {
+            configurationSources = { 'flake8' },
+            plugins = {
+                flake8 = {
+                    enabled = false,
+                    ignore = { 'E501', 'E231' },
+                    maxLineLength = 88,
+                },
+                black = {enabled = true},
+                autopep8 = { enabled = false },
+                mccabe = {enabled = false},
+                pycodestyle = {
+                    enabled = false,
+                    ignore = { 'E501', 'E231' },
+                    maxLineLength = 88,
+                },
+                pyflakes = {enabled = false},
+              },
+      },
+          },
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -491,8 +491,8 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+        ts_ls = {},
+        
 
         lua_ls = {
           -- cmd = { ... },
@@ -547,6 +547,7 @@ require('lazy').setup({
 
   { -- Autoformat
     'stevearc/conform.nvim',
+    enabled = false,
     event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
     keys = {
@@ -805,18 +806,44 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --  { import = 'custom.plugins' },
   { import = 'plugins' },
+  {
+    'folke/snacks.nvim',
+    enabled = true,
+    opts = {
+      picker = {},
+      scroll = { enabled = false },
+      bigfile = { enabled = true },
+      dashboard = {
+        enabled = false,
+        sections = {
+          { section = 'header' },
+          { section = 'keys', gap = 1, padding = 1 },
+          { section = 'startup' },
+          {
+            section = 'terminal',
+            cmd = 'chafa ~/Downloads/Bucker.jpeg  --format symbols --symbols vhalf --size 60x17',
+            --cmd = 'ascii-image-converter ~/.config/Bucker.png -C -c',
+            random = 10,
+            pane = 2,
+            indent = 4,
+            height = 30,
+          },
+        },
+      },
+    },
+  },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -843,14 +870,13 @@ require('lazy').setup({
     },
   },
 })
-
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
-
 --  ARJ -- Snippets
 ---- ------------------------------
+---
+---
 require 'custom/plugins/init'
--- require 'custom/plugins/golsp'
 require 'custom/arjkeymaps'
 
 local ls = require 'luasnip'
@@ -875,3 +901,31 @@ require('neo-tree').setup {
   },
 }
 require 'custom/jsonsnippet'
+
+-- venn.nvim: enable or disable keymappings
+function Toggle_venn()
+  local venn_enabled = vim.inspect(vim.b.venn_enabled)
+  if venn_enabled == 'nil' then
+    vim.b.venn_enabled = true
+    vim.cmd [[setlocal ve=all]]
+    -- draw a line on HJKL keystokes
+    vim.api.nvim_buf_set_keymap(0, 'n', 'J', '<C-v>j:VBox<CR>', { noremap = true })
+    vim.api.nvim_buf_set_keymap(0, 'n', 'K', '<C-v>k:VBox<CR>', { noremap = true })
+    vim.api.nvim_buf_set_keymap(0, 'n', 'L', '<C-v>l:VBox<CR>', { noremap = true })
+    vim.api.nvim_buf_set_keymap(0, 'n', 'H', '<C-v>h:VBox<CR>', { noremap = true })
+    -- draw a box by pressing "f" with visual selection
+    vim.api.nvim_buf_set_keymap(0, 'v', 'f', ':VBox<CR>', { noremap = true })
+  else
+    vim.cmd [[setlocal ve=]]
+    vim.api.nvim_buf_del_keymap(0, 'n', 'J')
+    vim.api.nvim_buf_del_keymap(0, 'n', 'K')
+    vim.api.nvim_buf_del_keymap(0, 'n', 'L')
+    vim.api.nvim_buf_del_keymap(0, 'n', 'H')
+    vim.api.nvim_buf_del_keymap(0, 'v', 'f')
+    vim.b.venn_enabled = nil
+  end
+end
+-- toggle keymappings for venn using <leader>v
+--
+vim.api.nvim_set_keymap('n', '<leader>v', ':lua Toggle_venn()<CR>', { noremap = true })
+
